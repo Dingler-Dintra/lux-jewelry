@@ -1659,273 +1659,77 @@
     .hero h1 .word { transform: none; opacity: 1; }
   }
 
-  /* ============================================================
-     INTRO CINEMATOGRÁFICA — Loader → Video → Fade out
-     ============================================================ */
+  /* =========================================================
+     INTRO — patrón Aurelia: video plays once → cross-fade → page
+     ========================================================= */
   .lux-intro {
     position: fixed; inset: 0;
-    background: var(--ink);
     z-index: 10000;
+    background: var(--canvas);
     display: flex; align-items: center; justify-content: center;
-    will-change: opacity, transform;
+    cursor: pointer;
+    transition: opacity 1.2s cubic-bezier(0.87, 0, 0.13, 1), visibility 1.2s ease;
   }
-  .lux-intro.is-leaving {
+  .lux-intro--gone {
     opacity: 0;
-    transition: opacity 1.2s cubic-bezier(0.87, 0, 0.13, 1);
+    visibility: hidden;
     pointer-events: none;
   }
-
-  /* Loader inner (visible al inicio, oculto cuando arranca el video) */
-  .lux-intro__loader {
-    position: absolute; inset: 0;
-    display: grid; place-items: center;
-    transition: opacity 0.6s var(--ease-out);
-  }
-  .lux-intro__loader.is-hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* Video centrado, contenido (no cropped), tamaño elegante */
-  .lux-intro__video-wrap {
-    position: relative;
-    width: min(85vw, 1180px);
-    height: min(70vh, 720px);
-    max-width: 100%;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0;
-    transform: scale(0.96);
-    transition: opacity 0.9s var(--ease-out), transform 1.2s var(--ease-out);
-  }
-  .lux-intro__video-wrap.is-active {
-    opacity: 1;
-    transform: scale(1);
-  }
-  .lux-intro__video-wrap video {
-    width: 100%;
-    height: 100%;
+  .lux-intro__video {
+    width: 100%; height: 100%;
     object-fit: contain;
-    /* sutil borde dorado interior para enmarcarlo */
-    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.5);
+    display: block;
   }
-  /* Vignette dorado sutil alrededor */
-  .lux-intro__video-wrap::before {
-    content: '';
-    position: absolute;
-    inset: -40px;
-    background: radial-gradient(ellipse at center,
-      rgba(184, 149, 106, 0.15) 0%,
-      transparent 60%);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 1.2s var(--ease-out) 0.4s;
-  }
-  .lux-intro__video-wrap.is-active::before { opacity: 1; }
-
-  /* Skip button bottom-right */
   .lux-intro__skip {
     position: absolute;
-    right: 32px; bottom: 32px;
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 11px 18px 11px 20px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: var(--canvas);
-    border-radius: 100px;
+    bottom: 32px; right: 32px;
+    background: rgba(26,24,21,0.06);
+    border: 1px solid rgba(26,24,21,0.25);
+    color: var(--ink);
+    padding: 10px 20px;
     font-family: var(--sans);
-    font-size: 12px; font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
     cursor: pointer;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
     opacity: 0;
-    transition: opacity 0.6s var(--ease-out) 0.4s,
-                background 0.3s var(--ease-out),
-                border-color 0.3s var(--ease-out),
-                transform 0.3s var(--ease-out);
-  }
-  .lux-intro__video-wrap.is-active ~ .lux-intro__skip {
-    opacity: 0.85;
+    animation: introSkipFadeIn 0.6s ease 1.2s forwards;
   }
   .lux-intro__skip:hover {
-    opacity: 1;
-    background: rgba(255, 255, 255, 0.12);
-    border-color: var(--gold);
+    background: rgba(26,24,21,0.10);
     transform: translateY(-1px);
   }
-  .lux-intro__skip svg {
-    width: 12px; height: 12px;
-    color: var(--gold-light);
+  @keyframes introSkipFadeIn {
+    to { opacity: 0.85; }
   }
-  @media (max-width: 720px) {
-    .lux-intro__skip { right: 18px; bottom: 18px; padding: 10px 14px; }
-    .lux-intro__skip span { font-size: 11px; }
-    .lux-intro__video-wrap { width: 92vw; height: 60vh; }
+  @media (max-width: 640px) {
+    .lux-intro__skip { bottom: 24px; right: 24px; padding: 8px 16px; font-size: 10px; }
   }
 
-  .lux-loader__inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 32px;
-    color: var(--canvas);
-  }
-  .lux-loader__brand {
-    display: flex; align-items: center; gap: 14px;
-    font-family: var(--serif);
-    font-size: clamp(56px, 8vw, 104px);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    color: var(--canvas);
-  }
-  .lux-loader__brand-mark { letter-spacing: 0.04em; }
-  .lux-loader__brand-dot {
-    width: 7px; height: 7px;
-    background: var(--gold);
-    border-radius: 50%;
-    align-self: center;
-  }
-  .lux-loader__brand-italic {
-    font-family: var(--serif-italic);
-    font-style: italic;
-    font-size: 0.55em;
-    color: var(--gold-light);
-    margin-bottom: -0.05em;
-  }
-  .lux-loader__line {
-    width: 280px; height: 1px;
-    background: rgba(255, 255, 255, 0.14);
-    overflow: hidden;
-  }
-  .lux-loader__fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--gold-deep), var(--gold-light));
-  }
-  .lux-loader__meta {
-    display: flex; align-items: center;
-    gap: 16px;
-    font-family: var(--sans);
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
-  }
-  .lux-loader__count { font-feature-settings: 'tnum'; min-width: 30px; text-align: right; }
-  .lux-loader__sub::before { content: '·'; margin-right: 12px; }
-
-  /* ============================================================
-     ESTADOS DEL HERO — escondido hasta que el video termine
-     ============================================================ */
-  /* Inicialmente escondidos (mientras corre el loader y el video) */
-  .hero-text > .atelier-stamp,
-  .hero-text > .rating-pill {
+  /* === Cross-fade: TODO lo no-intro arranca invisible === */
+  body > *:not(.lux-intro) {
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+    transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.3s;
   }
-  /* Heavy elements: escondidos hasta que el video TERMINE */
-  .hero-text > h1,
-  .hero-text > .lede,
-  .hero-text > .hero-cta,
-  .hero-text > .hero-stats,
-  .hero-text > .mini-quote,
-  .hero-asset,
-  .scroll-hint {
-    opacity: 0;
-    pointer-events: none;
-  }
-  .hero h1 .word {
-    display: inline-block;
-    transform: translateY(110%);
-    transition: transform 1.1s var(--ease-out), opacity 0.9s var(--ease-out);
-  }
-
-  /* === FASE 1: video empezó (justo después del loader) === */
-  body.lux-video-started .hero-text > .atelier-stamp,
-  body.lux-video-started .hero-text > .rating-pill {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  body.lux-video-started .hero-text > .rating-pill {
-    transition-delay: 0.25s;
-  }
-
-  /* === FASE 2: video terminó — reveal del contenido principal === */
-  body.lux-video-ended .hero-text > h1 {
+  body.site-revealed > *:not(.lux-intro) {
     opacity: 1;
   }
-  body.lux-video-ended .hero h1 .word {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  body.lux-video-ended .hero h1 .row:nth-child(1) .word.w1 { transition-delay: 0.05s; }
-  body.lux-video-ended .hero h1 .row:nth-child(1) .word.w2 { transition-delay: 0.13s; }
-  body.lux-video-ended .hero h1 .row:nth-child(1) .word.w3 { transition-delay: 0.21s; }
-  body.lux-video-ended .hero h1 .row:nth-child(1) .word.w4 { transition-delay: 0.29s; }
-  body.lux-video-ended .hero h1 .row:nth-child(2) .word.w5 { transition-delay: 0.45s; }
-  body.lux-video-ended .hero h1 .row:nth-child(2) .word.w6 { transition-delay: 0.53s; }
-  body.lux-video-ended .hero h1 .row:nth-child(2) .word.w7 { transition-delay: 0.61s; }
 
-  body.lux-video-ended .hero-text > .lede,
-  body.lux-video-ended .hero-text > .hero-cta,
-  body.lux-video-ended .hero-text > .hero-stats,
-  body.lux-video-ended .hero-text > .mini-quote,
-  body.lux-video-ended .hero-asset,
-  body.lux-video-ended .scroll-hint {
-    opacity: 1;
-    pointer-events: auto;
-    transition: opacity 1.1s var(--ease-out);
-  }
-  body.lux-video-ended .hero-text > .lede     { transition-delay: 0.85s; }
-  body.lux-video-ended .hero-text > .hero-cta { transition-delay: 1.0s; }
-  body.lux-video-ended .hero-text > .hero-stats { transition-delay: 1.15s; }
-  body.lux-video-ended .hero-text > .mini-quote { transition-delay: 1.4s; }
-  body.lux-video-ended .hero-asset            { transition-delay: 0.6s; }
-  body.lux-video-ended .scroll-hint           { transition-delay: 1.6s; }
-
-  /* Mejoras de legibilidad sobre el video — overlay cream para texto */
-  .hero-video-bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      rgba(247, 244, 238, 0.85) 0%,
-      rgba(247, 244, 238, 0.55) 30%,
-      rgba(247, 244, 238, 0.10) 60%,
-      transparent 100%
-    );
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* Polish: text shadow leve sobre los textos del hero para profundidad */
-  .hero-text h1 { text-shadow: 0 2px 24px rgba(247, 244, 238, 0.4); }
-  .hero-text .lede { color: var(--ink); font-weight: 400; }
-
-  /* Mobile: skip cinematic, mostrar todo de una */
-  @media (max-width: 760px) {
-    body.lux-video-started .hero-text > h1,
-    body.lux-video-started .hero-text > .lede,
-    body.lux-video-started .hero-text > .hero-cta,
-    body.lux-video-started .hero-text > .hero-stats,
-    body.lux-video-started .hero-text > .mini-quote,
-    body.lux-video-started .hero-asset,
-    body.lux-video-started .scroll-hint {
-      opacity: 1; pointer-events: auto;
-    }
-    body.lux-video-started .hero h1 .word {
-      transform: translateY(0); opacity: 1;
-    }
+  /* === Hero poster: último frame del video como bg === */
+  .hero-video-bg {
+    background-image: url('assets/img/hero-poster.jpg');
+    background-size: cover;
+    background-position: center;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .lux-loader { display: none; }
-    .hero-text > *, .hero-asset, .scroll-hint { opacity: 1 !important; pointer-events: auto !important; }
-    .hero h1 .word { transform: none !important; opacity: 1 !important; }
+    .lux-intro { display: none; }
+    body > *:not(.lux-intro) { opacity: 1 !important; }
   }
+
 </style>
 </head>
 <body>
@@ -1948,39 +1752,12 @@
   <div class="top-marquee-track" id="topMarqueeTrack"></div>
 </div>
 
-<!-- INTRO CINEMATOGRÁFICA: Loader → Video fullscreen (con Skip) → fade out -->
+<!-- INTRO: video plays once → cross-fade → home page (patrón Aurelia) -->
 <div class="lux-intro" id="luxIntro">
-  <!-- Loader (visible primero, ~1.6s) -->
-  <div class="lux-intro__loader" id="luxLoader">
-    <div class="lux-loader__inner">
-      <div class="lux-loader__brand">
-        <span class="lux-loader__brand-mark">LUX</span>
-        <span class="lux-loader__brand-dot"></span>
-        <span class="lux-loader__brand-italic">Jewelry</span>
-      </div>
-      <div class="lux-loader__line"><div class="lux-loader__fill" id="luxLoaderFill"></div></div>
-      <div class="lux-loader__meta">
-        <span class="lux-loader__count" id="luxLoaderCount">0</span>
-        <span class="lux-loader__sub">Atelier desde 1985</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Video centrado (aparece después del loader) -->
-  <div class="lux-intro__video-wrap" id="luxIntroVideoWrap">
-    <video muted playsinline preload="auto" id="heroVideo">
-      <source src="assets/img/video-01.mp4" type="video/mp4">
-    </video>
-  </div>
-
-  <!-- Skip button bottom-right -->
-  <button class="lux-intro__skip" id="luxIntroSkip" type="button" aria-label="Saltar intro">
-    <span>Skip</span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="5 4 15 12 5 20 5 4"/>
-      <line x1="19" y1="5" x2="19" y2="19"/>
-    </svg>
-  </button>
+  <video class="lux-intro__video" id="heroVideo" autoplay muted playsinline preload="auto">
+    <source src="assets/img/video-01.mp4" type="video/mp4">
+  </video>
+  <button class="lux-intro__skip" id="luxIntroSkip" type="button" aria-label="Skip intro">SKIP</button>
 </div>
 
 <header class="nav" id="nav">
@@ -2337,116 +2114,35 @@
 
 <script>
   // ============================
-  // INTRO CINEMATOGRÁFICA
-  // Loader → Video fullscreen (con Skip) → fade out al sec 7 → reveal página
+  // INTRO — patrón Aurelia (video → cross-fade → page)
   // ============================
-  (function initCinematicIntro() {
-    const intro = document.getElementById('luxIntro');
-    const loader = document.getElementById('luxLoader');
-    const fill = document.getElementById('luxLoaderFill');
-    const count = document.getElementById('luxLoaderCount');
-    const videoWrap = document.getElementById('luxIntroVideoWrap');
-    const video = document.getElementById('heroVideo');
-    const skip = document.getElementById('luxIntroSkip');
-    if (!intro || !video) return;
+  (function initIntro() {
+    const introEl = document.getElementById('luxIntro');
+    const introVideo = document.getElementById('heroVideo');
+    const introSkip = document.getElementById('luxIntroSkip');
+    if (!introEl || !introVideo) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) {
-      // Sin animación: ir al estado final
-      document.body.classList.add('lux-video-started', 'lux-video-ended');
-      intro.style.display = 'none';
-      return;
-    }
+    const dismissIntro = () => {
+      if (introEl.classList.contains('lux-intro--gone')) return;
+      introEl.classList.add('lux-intro--gone');
+      document.body.classList.add('site-revealed');
+      document.body.style.overflow = '';
+      setTimeout(() => { introEl.remove(); }, 1300);
+    };
 
-    // FASE 1 — Loader 0% → 100% en ~1.5s mientras precarga el video
-    let progress = 0;
-    let videoReady = false;
-    let minTimeReached = false;
-
-    function tickLoader() {
-      progress += 1.8 + Math.random() * 1.4;
-      if (progress >= 100) progress = 100;
-      fill.style.width = progress + '%';
-      count.textContent = Math.floor(progress);
-      if (progress < 100) {
-        setTimeout(tickLoader, 28 + Math.random() * 45);
-      } else {
-        minTimeReached = true;
-        maybeStartVideo();
-      }
-    }
-    tickLoader();
-
-    if (video.readyState >= 3) {
-      videoReady = true;
-    } else {
-      video.addEventListener('canplaythrough', () => { videoReady = true; maybeStartVideo(); }, { once: true });
-      setTimeout(() => { videoReady = true; maybeStartVideo(); }, 4000);
-    }
-
-    let started = false;
-    function maybeStartVideo() {
-      if (started || !videoReady || !minTimeReached) return;
-      started = true;
-      startVideo();
-    }
-
-    function startVideo() {
-      // FASE 2 — Loader fade out, video aparece centrado
-      loader.classList.add('is-hidden');
-      setTimeout(() => {
-        videoWrap.classList.add('is-active');
-        document.body.classList.add('lux-video-started');
-        const p = video.play();
-        if (p && p.catch) p.catch(() => exitIntro());
-      }, 350);
-    }
-
-    // FASE 3 — Salir del intro (al sec 7 del video O cuando el user da Skip)
-    let exited = false;
-    function exitIntro() {
-      if (exited) return;
-      exited = true;
-
-      // Empezar el reveal de la página debajo (smooth overlap)
-      document.body.classList.add('lux-video-ended');
-
-      // Fade out del overlay completo
-      intro.classList.add('is-leaving');
-
-      // Limpiar el DOM después del fadeout
-      setTimeout(() => {
-        try { video.pause(); } catch(e) {}
-        intro.remove();
-      }, 1400);
-    }
-
-    // Trigger automático: cuando el video llega al sec 7 (de 8 totales)
-    // Esto da overlap entre el último segundo del video y el reveal de la página
-    video.addEventListener('timeupdate', () => {
-      if (exited) return;
-      const total = video.duration || 8;
-      // Salir cuando falte 1 segundo (segundo 7 del video de 8s)
-      if (video.currentTime >= total - 1) {
-        exitIntro();
-      }
+    document.body.style.overflow = 'hidden';
+    introVideo.addEventListener('ended', dismissIntro);
+    introVideo.addEventListener('error', dismissIntro);
+    if (introSkip) introSkip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dismissIntro();
     });
-
-    // Trigger por Skip button
-    if (skip) {
-      skip.addEventListener('click', exitIntro);
-    }
-
-    // Trigger por keyboard (Esc o Space)
-    document.addEventListener('keydown', (e) => {
-      if (started && !exited && (e.key === 'Escape' || e.key === ' ')) {
-        e.preventDefault();
-        exitIntro();
-      }
+    introEl.addEventListener('click', (e) => {
+      if (e.target === introSkip || (introSkip && introSkip.contains(e.target))) return;
+      if (introVideo.currentTime > 6) dismissIntro();
     });
-
-    // Fallback: si algo falla, salir a los 12s
-    setTimeout(() => exitIntro(), 14000);
+    setTimeout(() => { if (!introVideo.ended && introVideo.paused) dismissIntro(); }, 14000);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) dismissIntro();
   })();
 
   // ============================

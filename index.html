@@ -1660,19 +1660,110 @@
   }
 
   /* ============================================================
-     LOADER CINEMATOGRÁFICO
+     INTRO CINEMATOGRÁFICA — Loader → Video → Fade out
      ============================================================ */
-  .lux-loader {
+  .lux-intro {
     position: fixed; inset: 0;
     background: var(--ink);
     z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    will-change: opacity, transform;
+  }
+  .lux-intro.is-leaving {
+    opacity: 0;
+    transition: opacity 1.2s cubic-bezier(0.87, 0, 0.13, 1);
+    pointer-events: none;
+  }
+
+  /* Loader inner (visible al inicio, oculto cuando arranca el video) */
+  .lux-intro__loader {
+    position: absolute; inset: 0;
     display: grid; place-items: center;
-    will-change: transform;
+    transition: opacity 0.6s var(--ease-out);
   }
-  .lux-loader.is-leaving {
-    transform: translateY(-100%);
-    transition: transform 1.1s cubic-bezier(0.87, 0, 0.13, 1);
+  .lux-intro__loader.is-hidden {
+    opacity: 0;
+    pointer-events: none;
   }
+
+  /* Video centrado, contenido (no cropped), tamaño elegante */
+  .lux-intro__video-wrap {
+    position: relative;
+    width: min(85vw, 1180px);
+    height: min(70vh, 720px);
+    max-width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.9s var(--ease-out), transform 1.2s var(--ease-out);
+  }
+  .lux-intro__video-wrap.is-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .lux-intro__video-wrap video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* sutil borde dorado interior para enmarcarlo */
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.5);
+  }
+  /* Vignette dorado sutil alrededor */
+  .lux-intro__video-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -40px;
+    background: radial-gradient(ellipse at center,
+      rgba(184, 149, 106, 0.15) 0%,
+      transparent 60%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-out) 0.4s;
+  }
+  .lux-intro__video-wrap.is-active::before { opacity: 1; }
+
+  /* Skip button bottom-right */
+  .lux-intro__skip {
+    position: absolute;
+    right: 32px; bottom: 32px;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 18px 11px 20px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--canvas);
+    border-radius: 100px;
+    font-family: var(--sans);
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-out) 0.4s,
+                background 0.3s var(--ease-out),
+                border-color 0.3s var(--ease-out),
+                transform 0.3s var(--ease-out);
+  }
+  .lux-intro__video-wrap.is-active ~ .lux-intro__skip {
+    opacity: 0.85;
+  }
+  .lux-intro__skip:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--gold);
+    transform: translateY(-1px);
+  }
+  .lux-intro__skip svg {
+    width: 12px; height: 12px;
+    color: var(--gold-light);
+  }
+  @media (max-width: 720px) {
+    .lux-intro__skip { right: 18px; bottom: 18px; padding: 10px 14px; }
+    .lux-intro__skip span { font-size: 11px; }
+    .lux-intro__video-wrap { width: 92vw; height: 60vh; }
+  }
+
   .lux-loader__inner {
     display: flex;
     flex-direction: column;
@@ -1857,20 +1948,39 @@
   <div class="top-marquee-track" id="topMarqueeTrack"></div>
 </div>
 
-<!-- LOADER cinematográfico -->
-<div class="lux-loader" id="luxLoader">
-  <div class="lux-loader__inner">
-    <div class="lux-loader__brand">
-      <span class="lux-loader__brand-mark">LUX</span>
-      <span class="lux-loader__brand-dot"></span>
-      <span class="lux-loader__brand-italic">Jewelry</span>
-    </div>
-    <div class="lux-loader__line"><div class="lux-loader__fill" id="luxLoaderFill"></div></div>
-    <div class="lux-loader__meta">
-      <span class="lux-loader__count" id="luxLoaderCount">0</span>
-      <span class="lux-loader__sub">Atelier desde 1985</span>
+<!-- INTRO CINEMATOGRÁFICA: Loader → Video fullscreen (con Skip) → fade out -->
+<div class="lux-intro" id="luxIntro">
+  <!-- Loader (visible primero, ~1.6s) -->
+  <div class="lux-intro__loader" id="luxLoader">
+    <div class="lux-loader__inner">
+      <div class="lux-loader__brand">
+        <span class="lux-loader__brand-mark">LUX</span>
+        <span class="lux-loader__brand-dot"></span>
+        <span class="lux-loader__brand-italic">Jewelry</span>
+      </div>
+      <div class="lux-loader__line"><div class="lux-loader__fill" id="luxLoaderFill"></div></div>
+      <div class="lux-loader__meta">
+        <span class="lux-loader__count" id="luxLoaderCount">0</span>
+        <span class="lux-loader__sub">Atelier desde 1985</span>
+      </div>
     </div>
   </div>
+
+  <!-- Video centrado (aparece después del loader) -->
+  <div class="lux-intro__video-wrap" id="luxIntroVideoWrap">
+    <video muted playsinline preload="auto" id="heroVideo">
+      <source src="assets/img/video-01.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- Skip button bottom-right -->
+  <button class="lux-intro__skip" id="luxIntroSkip" type="button" aria-label="Saltar intro">
+    <span>Skip</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="5 4 15 12 5 20 5 4"/>
+      <line x1="19" y1="5" x2="19" y2="19"/>
+    </svg>
+  </button>
 </div>
 
 <header class="nav" id="nav">
@@ -1894,11 +2004,7 @@
 
   <!-- ============== HERO ============== -->
   <section id="inicio" class="hero">
-  <div class="hero-video-bg" aria-hidden="true">
-    <video muted playsinline preload="auto" id="heroVideo">
-      <source src="assets/img/video-01.mp4" type="video/mp4">
-    </video>
-  </div>
+  <div class="hero-video-bg" aria-hidden="true"></div>
     <div class="hero-watermark" aria-hidden="true"><span id="heroWatermark">JEWELRY</span></div>
     <div class="hero-sparkles" id="heroSparkles" aria-hidden="true"></div>
 
@@ -2232,103 +2338,115 @@
 <script>
   // ============================
   // INTRO CINEMATOGRÁFICA
-  // Loader → Video plays once → Reveal del contenido en cascada
+  // Loader → Video fullscreen (con Skip) → fade out al sec 7 → reveal página
   // ============================
   (function initCinematicIntro() {
+    const intro = document.getElementById('luxIntro');
     const loader = document.getElementById('luxLoader');
     const fill = document.getElementById('luxLoaderFill');
     const count = document.getElementById('luxLoaderCount');
+    const videoWrap = document.getElementById('luxIntroVideoWrap');
     const video = document.getElementById('heroVideo');
-    if (!loader || !video) return;
+    const skip = document.getElementById('luxIntroSkip');
+    if (!intro || !video) return;
 
-    const isMobile = window.matchMedia('(max-width: 760px)').matches;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (reduced) {
-      // No animation: skip to ended state immediately
+      // Sin animación: ir al estado final
       document.body.classList.add('lux-video-started', 'lux-video-ended');
-      loader.style.display = 'none';
-      try { video.play().catch(()=>{}); } catch(e) {}
+      intro.style.display = 'none';
       return;
     }
 
-    // Animar loader 0% → 100% en ~1.6s mientras carga el video
+    // FASE 1 — Loader 0% → 100% en ~1.5s mientras precarga el video
     let progress = 0;
     let videoReady = false;
     let minTimeReached = false;
 
-    function tick() {
-      progress += 1.6 + Math.random() * 1.4;
+    function tickLoader() {
+      progress += 1.8 + Math.random() * 1.4;
       if (progress >= 100) progress = 100;
       fill.style.width = progress + '%';
       count.textContent = Math.floor(progress);
       if (progress < 100) {
-        setTimeout(tick, 30 + Math.random() * 50);
+        setTimeout(tickLoader, 28 + Math.random() * 45);
       } else {
         minTimeReached = true;
-        maybeStart();
+        maybeStartVideo();
       }
     }
-    tick();
+    tickLoader();
 
-    // Esperar a que el video esté listo para reproducirse
     if (video.readyState >= 3) {
       videoReady = true;
     } else {
-      video.addEventListener('canplaythrough', () => { videoReady = true; maybeStart(); }, { once: true });
-      // Fallback en caso de que no dispare canplaythrough
-      setTimeout(() => { videoReady = true; maybeStart(); }, 4000);
+      video.addEventListener('canplaythrough', () => { videoReady = true; maybeStartVideo(); }, { once: true });
+      setTimeout(() => { videoReady = true; maybeStartVideo(); }, 4000);
     }
 
     let started = false;
-    function maybeStart() {
-      if (started) return;
-      if (!videoReady || !minTimeReached) return;
+    function maybeStartVideo() {
+      if (started || !videoReady || !minTimeReached) return;
       started = true;
       startVideo();
     }
 
     function startVideo() {
-      // Despedir el loader hacia arriba
-      loader.classList.add('is-leaving');
-      // Pequeño delay para que el video empiece justo cuando el loader empieza a salir
+      // FASE 2 — Loader fade out, video aparece centrado
+      loader.classList.add('is-hidden');
       setTimeout(() => {
+        videoWrap.classList.add('is-active');
         document.body.classList.add('lux-video-started');
-        const playPromise = video.play();
-        if (playPromise && playPromise.catch) {
-          playPromise.catch(() => {
-            // Si falla autoplay (raro con muted=true), revelar todo igual
-            onVideoEnded();
-          });
-        }
-      }, 250);
-      // Quitar el loader del DOM después de la transición
-      setTimeout(() => loader.remove(), 1300);
+        const p = video.play();
+        if (p && p.catch) p.catch(() => exitIntro());
+      }, 350);
     }
 
-    // Reveal cinematográfico cuando termina el video
-    function onVideoEnded() {
-      // Mantener el último frame visible (no rebobinar)
-      try {
-        video.pause();
-        video.currentTime = video.duration - 0.05;
-      } catch(e) {}
+    // FASE 3 — Salir del intro (al sec 7 del video O cuando el user da Skip)
+    let exited = false;
+    function exitIntro() {
+      if (exited) return;
+      exited = true;
+
+      // Empezar el reveal de la página debajo (smooth overlap)
       document.body.classList.add('lux-video-ended');
+
+      // Fade out del overlay completo
+      intro.classList.add('is-leaving');
+
+      // Limpiar el DOM después del fadeout
+      setTimeout(() => {
+        try { video.pause(); } catch(e) {}
+        intro.remove();
+      }, 1400);
     }
 
-    video.addEventListener('ended', onVideoEnded, { once: true });
-
-    // Fallback: si el video tarda demasiado, igual hacer reveal
-    setTimeout(() => {
-      if (!document.body.classList.contains('lux-video-ended')) {
-        onVideoEnded();
+    // Trigger automático: cuando el video llega al sec 7 (de 8 totales)
+    // Esto da overlap entre el último segundo del video y el reveal de la página
+    video.addEventListener('timeupdate', () => {
+      if (exited) return;
+      const total = video.duration || 8;
+      // Salir cuando falte 1 segundo (segundo 7 del video de 8s)
+      if (video.currentTime >= total - 1) {
+        exitIntro();
       }
-    }, 12000);
+    });
 
-    // En mobile: empezar el reveal con video-started (no esperar end)
-    if (isMobile) {
-      setTimeout(() => onVideoEnded(), 800);
+    // Trigger por Skip button
+    if (skip) {
+      skip.addEventListener('click', exitIntro);
     }
+
+    // Trigger por keyboard (Esc o Space)
+    document.addEventListener('keydown', (e) => {
+      if (started && !exited && (e.key === 'Escape' || e.key === ' ')) {
+        e.preventDefault();
+        exitIntro();
+      }
+    });
+
+    // Fallback: si algo falla, salir a los 12s
+    setTimeout(() => exitIntro(), 14000);
   })();
 
   // ============================
